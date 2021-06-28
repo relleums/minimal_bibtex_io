@@ -1,7 +1,7 @@
 """
 Minimal restrictive parser for bibliography bib-files.
 """
-import textwrap
+import textwrap as _textwrap
 
 
 def loads(b):
@@ -21,13 +21,13 @@ def loads(b):
     b : bytes
             The raw bytes of a bib-file.
     """
-    raw_entries = split_raw_entries(bib_B=b)
+    raw_entries = _split_raw_entries(bib_B=b)
 
     entries = []
     for _entry_B in raw_entries:
         try:
             entry_B = bytes(_entry_B)
-            entry_B = remove_trailing_comments_from_entry_bytes(
+            entry_B = _remove_trailing_comments_from_entry_bytes(
                 entry_B=entry_B
             )
             entry_B = bytes.replace(entry_B, b"\r", b"")
@@ -45,20 +45,20 @@ def loads(b):
 
     for entry_B in entries:
         try:
-            entrytype_B = parse_entrytype_bytes(entry_B=entry_B)
+            entrytype_B = _parse_entrytype_bytes(entry_B=entry_B)
             if bytes.lower(entrytype_B) == b"string":
-                fields_B = parse_fields_bytes(entry_B=entry_B)
-                field_dict = parse_fields_into_dict(fields_B=fields_B)
+                fields_B = _parse_fields_bytes(entry_B=entry_B)
+                field_dict = _parse_fields_into_dict(fields_B=fields_B)
                 string = {}
                 string["fields"] = field_dict
                 bib["strings"].append(string)
             elif bytes.lower(entrytype_B) == b"preamble":
-                preamble = parse_preamble_bytes(entry_B=entry_B)
+                preamble = _parse_preamble_bytes(entry_B=entry_B)
                 bib["preambles"].append(preamble)
             else:
-                citekey_B = parse_citekey_bytes(entry_B=entry_B)
-                fields_B = parse_fields_bytes(entry_B=entry_B)
-                field_dict = parse_fields_into_dict(fields_B=fields_B)
+                citekey_B = _parse_citekey_bytes(entry_B=entry_B)
+                fields_B = _parse_fields_bytes(entry_B=entry_B)
+                field_dict = _parse_fields_into_dict(fields_B=fields_B)
                 entry = {}
                 entry["fields"] = field_dict
                 entry["type"] = entrytype_B
@@ -113,7 +113,7 @@ def normalize(
     out["entries"] = []
     for entry in raw_byte_bib["entries"]:
         out["entries"].append(
-            normalize_entry(
+            _normalize_entry(
                 entry=entry,
                 field_keys_lower=field_keys_lower,
                 field_keys_ascii=field_keys_ascii,
@@ -128,7 +128,7 @@ def normalize(
     out["strings"] = []
     for string_entry in raw_byte_bib["strings"]:
         out["strings"].append(
-            normalize_entry(
+            _normalize_entry(
                 entry=string_entry,
                 field_keys_lower=field_keys_lower,
                 field_keys_ascii=field_keys_ascii,
@@ -141,7 +141,7 @@ def normalize(
     out["preambles"] = []
     for preamble_entry in raw_byte_bib["preambles"]:
         if preamble_values_ascii:
-            out["preambles"].append(decode_ascii(B=preamble_entry))
+            out["preambles"].append(_decode_ascii(B=preamble_entry))
         else:
             out["preambles"].append(preamble_entry)
     return out
@@ -212,7 +212,7 @@ def _dumps_fields(fields, indent, width):
             field += "{"
             field += "\n"
             field += " " * 2 * indent
-            tmplines = textwrap.wrap(value, width - 2 * indent)
+            tmplines = _textwrap.wrap(value, width - 2 * indent)
             field += str.join("\n" + " " * 2 * indent, tmplines)
             field += "\n"
             field += " " * indent + "},"
@@ -223,7 +223,7 @@ def _dumps_fields(fields, indent, width):
     return buff
 
 
-def normalize_entry(
+def _normalize_entry(
     entry,
     field_keys_lower=True,
     field_keys_ascii=True,
@@ -237,24 +237,24 @@ def normalize_entry(
     if "type" in entry:
         _type = bytes(entry["type"])
         _type = bytes.lower(_type) if type_lower else _type
-        _type = decode_ascii(_type) if type_ascii else _type
+        _type = _decode_ascii(_type) if type_ascii else _type
         out["type"] = _type
 
     if "citekey" in entry:
         _ck = bytes(entry["citekey"])
         _ck = bytes.lower(_ck) if citekey_lower else _ck
-        _ck = decode_ascii(_ck) if citekey_ascii else _ck
+        _ck = _decode_ascii(_ck) if citekey_ascii else _ck
         out["citekey"] = _ck
 
     of = {}
     for field_key in entry["fields"]:
         _fk = bytes(field_key)
         _fk = bytes.lower(_fk) if field_keys_lower else _fk
-        _fk = decode_ascii(_fk) if field_keys_ascii else _fk
+        _fk = _decode_ascii(_fk) if field_keys_ascii else _fk
 
         if isinstance(entry["fields"][field_key], bytes):
             _val = bytes(entry["fields"][field_key])
-            _val = decode_ascii(_val) if field_values_ascii else _val
+            _val = _decode_ascii(_val) if field_values_ascii else _val
             of[_fk] = _val
         else:
             of[_fk] = entry["fields"][field_key]
@@ -273,7 +273,7 @@ def _split_into_blocks(B, sep=b"@"):
     return blocks
 
 
-def split_raw_entries(bib_B):
+def _split_raw_entries(bib_B):
     blocks = _split_into_blocks(B=bib_B)
 
     entries = []
@@ -297,7 +297,7 @@ def split_raw_entries(bib_B):
     return entries
 
 
-def remove_trailing_comments_from_entry_bytes(entry_B):
+def _remove_trailing_comments_from_entry_bytes(entry_B):
     """
     remove possible comments trailing the '@type{citekey, ...}' entry.
     """
@@ -305,7 +305,7 @@ def remove_trailing_comments_from_entry_bytes(entry_B):
     return entry_B[0 : stop + 1]
 
 
-def parse_entrytype_bytes(entry_B):
+def _parse_entrytype_bytes(entry_B):
     pos_at = bytes.find(entry_B, b"@")
     pos_brace = bytes.find(entry_B, b"{")
     assert pos_at >= 0, "Expected '@' in bib-entry-bytes."
@@ -315,7 +315,7 @@ def parse_entrytype_bytes(entry_B):
     return entrykey_B
 
 
-def parse_citekey_bytes(entry_B):
+def _parse_citekey_bytes(entry_B):
     pos_brace = bytes.find(entry_B, b"{")
     pos_comma = bytes.find(entry_B, b",")
 
@@ -327,7 +327,7 @@ def parse_citekey_bytes(entry_B):
     return citekey_B
 
 
-def parse_fields_bytes(entry_B):
+def _parse_fields_bytes(entry_B):
     assert entry_B[-1] == b"}"[0]
 
     pos_brace = bytes.find(entry_B, b"{")
@@ -349,13 +349,13 @@ def parse_fields_bytes(entry_B):
     return fields_B
 
 
-def parse_preamble_bytes(entry_B):
+def _parse_preamble_bytes(entry_B):
     start, stop = _find_braces_start_stop(B=entry_B,)
     preamble_B = entry_B[start + 1 : stop]
     return bytes.strip(preamble_B)
 
 
-def parse_fields_into_dict(fields_B):
+def _parse_fields_into_dict(fields_B):
     work = bytes(fields_B)
 
     fields = {}
@@ -402,7 +402,7 @@ def _advance(B, pos):
     return bytes.join(b"", [m * b" ", B[m:]])
 
 
-def decode_ascii(B):
+def _decode_ascii(B):
     try:
         asc = bytes.decode(B, encoding="ascii", errors="strict")
         return asc
