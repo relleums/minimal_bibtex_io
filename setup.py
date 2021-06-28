@@ -15,7 +15,9 @@ setuptools.setup(
     license="MIT",
     packages=["minimal_bibtex_io",],
     package_data={
-        "minimal_bibtex_io": os.path.join("tests", "resources", "*")
+        "minimal_bibtex_io": [
+            os.path.join("tests", "resources", "example.bib")
+        ],
     },
     classifiers=[
         "Programming Language :: Python :: 3",
