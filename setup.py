@@ -14,7 +14,9 @@ setuptools.setup(
     author_email="sebastian-achim.mueller@mpi-hd.mpg.de",
     license="MIT",
     packages=["minimal_bibtex_io",],
-    package_data={'minimal_bibtex_io': os.path.join("tests", "resources", "*")},
+    package_data={
+        "minimal_bibtex_io": os.path.join("tests", "resources", "*")
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
