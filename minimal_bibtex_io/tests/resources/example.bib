@@ -1,0 +1,36 @@
+@book{companion,
+    author = "Goossens, Michel and Mittelbach, Franck and Samarin, Alexander",
+    title = "The {{\LaTeX}} {C}ompanion",
+    publisher = "Addison-Wesley",
+    year = 1993,
+}
+
+@book{simple,
+    fieldone = "value_1",
+    fieldtwo = "value_2",
+    fieldn = "value_n",
+}
+
+
+@pitfall{tricky,
+    titleone = "Comments on {"}Filenames and Fonts{"}",
+    titletwo = {Comments on "Filenames and Fonts"},
+}
+
+@string{AW      = "Addison-Wesley"}
+
+@book{Goossens1993,
+    author        = "Goossens, Michel and Mittelbach, Franck and Samarin, Alexander",
+    title         = "The {{\LaTeX}} {C}ompanion",
+    booktitle     = "The {{\LaTeX}} {C}ompanion",
+    publisher     = "Addison-Wesley",
+    year          = 1993,
+    month         = "December",
+    ISBN          = "0-201-54199-8",
+    library       = "Yes",
+    redonculus    = 1234567890123456789012345678901234567890123456789012345678901234567890123456
+}
+
+@preamble{ "\makeatletter" }
+@preamble{ "\@ifundefined{url}{\def\url#1{\texttt{#1}}}{}" }
+@preamble{ "\makeatother" }
