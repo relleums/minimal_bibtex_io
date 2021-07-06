@@ -6,7 +6,7 @@ with open("README.rst", "r") as f:
 
 setuptools.setup(
     name="minimal_bibtex_io",
-    version="0.0.0",
+    version="0.0.1",
     description="A minimal restrictive parser and writer for bibliography bib-files",
     long_description=long_description,
     url="https://github.com/relleums",

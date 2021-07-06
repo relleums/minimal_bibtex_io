@@ -212,7 +212,7 @@ def _dumps_fields(fields, indent, width):
             field += "{"
             field += "\n"
             field += " " * 2 * indent
-            tmplines = _textwrap.wrap(value, width - 2 * indent)
+            tmplines = _textwrap.wrap(fields[key], width - 2 * indent)
             field += str.join("\n" + " " * 2 * indent, tmplines)
             field += "\n"
             field += " " * indent + "},"
@@ -393,8 +393,13 @@ def _parse_fields_into_dict(fields_B):
 
         work = work[stop + 1 :]
 
-        fields[key] = value
+        fields[key] = _strip_unneccessary_whitespaces(value)
     return fields
+
+
+def _strip_unneccessary_whitespaces(B):
+    out = bytes.strip(B)
+    return b" ".join(out.split())
 
 
 def _advance(B, pos):
