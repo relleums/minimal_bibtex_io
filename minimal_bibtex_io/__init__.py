@@ -227,6 +227,7 @@ def _normalize_entry(
     entry,
     field_keys_lower=True,
     field_keys_ascii=True,
+    field_values_strip=True,
     field_values_ascii=True,
     type_lower=True,
     type_ascii=True,
@@ -254,6 +255,7 @@ def _normalize_entry(
 
         if isinstance(entry["fields"][field_key], bytes):
             _val = bytes(entry["fields"][field_key])
+            _val = _strip_latex(_val) if field_values_strip else _val
             _val = _decode_ascii(_val) if field_values_ascii else _val
             of[_fk] = _val
         else:
@@ -393,21 +395,32 @@ def _parse_fields_into_dict(fields_B):
 
         work = work[stop + 1 :]
 
-        fields[key] = _strip_unneccessary_whitespaces(value)
+        fields[key] = value
     return fields
 
 
-def _strip_unneccessary_whitespaces(B):
+def _strip_latex(B):
+    """
+    Returns bytes without leading, trailing, or consecutive whitespaces.
+    """
     out = bytes.strip(B)
     return b" ".join(out.split())
 
 
 def _advance(B, pos):
+    """
+    Returns byts overwritten with whitespaces up to and including 'pos'.
+    """
     m = pos + 1
+    assert m >= 0  # prevent index looping
+    assert pos < len(B)
     return bytes.join(b"", [m * b" ", B[m:]])
 
 
 def _decode_ascii(B):
+    """
+    Decode B to ascii and print B in case of errors.
+    """
     try:
         asc = bytes.decode(B, encoding="ascii", errors="strict")
         return asc
@@ -417,9 +430,14 @@ def _decode_ascii(B):
 
 
 def _find_braces_start_stop(B, opening=b"{", closing=b"}"):
+    """
+    Returns the start and stop position of the outermost pair of
+    opening and closing braces.
+    """
     work = bytes(B)
     pos = bytes.find(work, opening)
-    assert pos >= 0
+    if pos < 0:
+        return -1, -1
     num_open = 1
     work = _advance(B=work, pos=pos)
     start = int(pos)
@@ -449,6 +467,9 @@ def _find_braces_start_stop(B, opening=b"{", closing=b"}"):
 
 
 def _find_first_non_space(B):
+    """
+    Returns the position of the first char that is no whitespace.
+    """
     pos = 0
     while pos < len(B):
         if not bytes.isspace(B[pos : pos + 1]):
@@ -459,6 +480,9 @@ def _find_first_non_space(B):
 
 
 def _find_first_non_digit(B):
+    """
+    Returns the position of the first char that is no digit.
+    """
     pos = 0
     while pos < len(B):
         if not bytes.isdigit(B[pos : pos + 1]):
@@ -469,6 +493,9 @@ def _find_first_non_digit(B):
 
 
 def _brace_balance(B):
+    """
+    Returns a list where each character in B is assigned the brace-balance.
+    """
     brace_balance = []
     bal = 0
     for p in range(len(B)):
@@ -481,6 +508,10 @@ def _brace_balance(B):
 
 
 def _find_first_quote_not_escaped(B):
+    """
+    Returns the position of the first quote '"' that is not escaped by either
+    '\\"' or with braces {"}.
+    """
     if len(B) == 0:
         return -1
 

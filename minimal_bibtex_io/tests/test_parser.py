@@ -1,6 +1,7 @@
 import minimal_bibtex_io as mbib
 import pkg_resources
 import os
+import pytest
 import tempfile
 
 example_bib_path = pkg_resources.resource_filename(
@@ -109,3 +110,94 @@ def test_dump_and_load():
     assert len(A["preambles"]) == len(B["preambles"])
     for i in range(len(A["preambles"])):
         A["preambles"][i] == B["preambles"][i]
+
+
+def test_stripper():
+    assert b"W" == mbib._strip_latex(b" W")
+    assert b"W" == mbib._strip_latex(b"W ")
+    assert b"W" == mbib._strip_latex(b" W ")
+    assert b"1 2" == mbib._strip_latex(b" 1 2 ")
+    assert b"1 2" == mbib._strip_latex(b"1  2")
+    assert b"1 2" == mbib._strip_latex(b" 1  2")
+    assert b"1 2" == mbib._strip_latex(b" 1  2 ")
+    assert b"1 2" == mbib._strip_latex(b" 1\n\n2")
+    assert b"" == mbib._strip_latex(b"")
+
+
+def test_advance():
+    assert b"" == mbib._advance(b"", -1)
+    assert b"abcdefg" == mbib._advance(b"abcdefg", -1)
+    assert b" bcdefg" == mbib._advance(b"abcdefg", 0)
+    assert b"       " == mbib._advance(b"abcdefg", 6)
+    with pytest.raises(AssertionError) as exc_info:
+        mbib._advance(b"abcdefg", 7)
+    with pytest.raises(AssertionError) as exc_info:
+        mbib._advance(b"abcdefg", -2)
+
+
+def test_find_braces():
+    #                                     01234567
+    b, e = mbib._find_braces_start_stop(b"{abcdef}")
+    assert b == 0
+    assert e == 7
+
+    b, e = mbib._find_braces_start_stop(b"{a{de}f}")
+    assert b == 0
+    assert e == 7
+
+    b, e = mbib._find_braces_start_stop(b"{a}de{f}")
+    assert b == 0
+    assert e == 2
+
+    #                                     0         1
+    #                                     01234567890123
+    b, e = mbib._find_braces_start_stop(b"abc {a} de {f}")
+    assert b == 4
+    assert e == 6
+
+    b, e = mbib._find_braces_start_stop(b"abc")
+    assert b == -1
+    assert e == -1
+
+    b, e = mbib._find_braces_start_stop(b"")
+    assert b == -1
+    assert e == -1
+
+
+
+def test_find_first_non_space():
+    assert mbib._find_first_non_space(b"") == -1
+    assert mbib._find_first_non_space(b"hand") == 0
+    assert mbib._find_first_non_space(b" hans") == 1
+    assert mbib._find_first_non_space(b" hans ") == 1
+    assert mbib._find_first_non_space(b" \nhans ") == 2
+    assert mbib._find_first_non_space(b" \thans ") == 2
+    assert mbib._find_first_non_space(b"\n\n\n\thans ") == 4
+
+
+def test_find_first_non_digit():
+    assert mbib._find_first_non_digit(b"") == -1
+    assert mbib._find_first_non_digit(b"123abc") == 3
+    assert mbib._find_first_non_digit(b"   abc") == 0
+    assert mbib._find_first_non_digit(b"1  abc") == 1
+
+
+def test_brace_balance():
+    assert mbib._brace_balance(b"") == []
+    assert mbib._brace_balance(b"{}") == [1,0]
+    assert mbib._brace_balance(b"}{") == [-1,0]
+    assert mbib._brace_balance(b"{{}}") == [1,2,1,0]
+    assert mbib._brace_balance(b"oo{aa{bb}cc}dd") == [
+        0,0,1,1,1,2,2,2,1,1,1,0,0,0
+    ]
+
+
+def test_find_first_quote_not_escaped():
+    assert mbib._find_first_quote_not_escaped(b'') == -1
+    assert mbib._find_first_quote_not_escaped(b' ') == -1
+    assert mbib._find_first_quote_not_escaped(b'"') == 0
+    assert mbib._find_first_quote_not_escaped(b'\\"') == -1
+    assert mbib._find_first_quote_not_escaped(b'{"}') == -1
+    assert mbib._find_first_quote_not_escaped(b'{"}"') == 3
+    assert mbib._find_first_quote_not_escaped(b'abc{"la"la"} hui') == -1
+    assert mbib._find_first_quote_not_escaped(b'abc{"la"la"} hui"') == 16
