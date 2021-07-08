@@ -26,8 +26,9 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Natural Language :: English",
         "Intended Audience :: Science/Research",
+        "Topic :: Text Processing",
+        "Topic :: Text Processing :: Markup :: LaTeX",
     ],
     python_requires=">=3.0",
 )
