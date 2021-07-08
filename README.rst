@@ -4,30 +4,30 @@ Minimal bibtex io
 
 Format according to "Tame the BeaST" by Nicolas Markey, Oct. 2009.
 
-- ''@ANYTHING{citekey, key = {value}, ...}'', This will be loaded as
-  bib-entry of type ''ANYTHING''
+- ``@TYPE{citekey, key = {value}, ...}``, This will be loaded as
+  bib-entry of type ``TYPE``
 
-- ''@string{key = {value}, ...}''
+- ``@string{key = {value}, ...}``
 
-- ''@preamble{value}''
+- ``@preamble{value}``
 
 Functions
 ---------
 
-''loads''
+``loads``
 ~~~~~~~~~
 Loads the raw bytes of a bibtex-file into a dictionary and makes only minimal assumptions on the structrue but not on the content.
 
-''normalize''
+``normalize``
 ~~~~~~~~~~~~~
 Takes the raw bib-dictionary and tries to decode and normalize it.
 All optionally. It strips away leading, trailing, and consecutive whitespaces.
 It converts all keys, entrytypes, and citekyes to lowercase.
 It decodes keys and/or values to ''ascii''.
 
-''dumps''
+``dumps``
 ~~~~~~~~~
-Dumps a normalized (all ''ascii'' string) bib-dictionary into a bib-file-string.
+Dumps a normalized (all ``ascii`` string) bib-dictionary into a bib-file-string.
 
 Example
 -------
