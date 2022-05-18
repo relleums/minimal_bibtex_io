@@ -5,8 +5,8 @@ with open("README.rst", "r", encoding="utf-8") as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="minimal_bibtex_io_relleums",
-    version="0.0.2",
+    name="minimal_bibtex_io_sebastian-achim-mueller",
+    version="0.0.3",
     author="Sebastian Achim Mueller",
     author_email="sebastian-achim.mueller@mpi-hd.mpg.de",
     description="A minimal loader and dumper for bibtex-files",
